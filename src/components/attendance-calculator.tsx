@@ -108,7 +108,7 @@ export default function AttendanceCalculator() {
             ? <>You need to attend classes until <strong>{format(requiredDate, "PPP")}</strong> to reach {customSettings.percentage}% attendance.<br/>STAY OUT! STAY OUT! STAY OUT!</>
             : `You may not be able to reach ${customSettings.percentage}% attendance this year.`;
     } else if (canMissPeriods > 0) {
-        message = <>{`You can afford to miss <strong>${Math.floor(canMissPeriods)}</strong> period(s) and maintain ${customSettings.percentage}% attendance.`}<br/>GOLAZOO!</>;
+        message = <>You can afford to miss <strong>{Math.floor(canMissPeriods)}</strong> period(s) and maintain {customSettings.percentage}% attendance.<br/>GOLAZOO!</>;
     }
 
     setResult({ finalAttended, finalTotal, percentage, periodsToMaintain, canMissPeriods, requiredDate, message });
