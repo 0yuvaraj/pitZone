@@ -175,7 +175,7 @@ export default function AttendanceCalculator() {
             ? <>After leave, you must attend until <strong>{format(requiredDate, "PPP")}</strong> to reach {customSettings.percentage}%.<br/>YOUR SEAT IS FULL OF WATER!!</>
             : `After leave, you may not reach ${customSettings.percentage}% attendance this year.`;
     } else if (canMissPeriods > 0) {
-        message = `After leave, you can still miss <strong>${Math.floor(canMissPeriods)}</strong> period(s).`;
+        message = <>After leave, you can still miss <strong>{Math.floor(canMissPeriods)}</strong> period(s).</>;
     }
 
     setSimulationResult({ finalAttended: Math.floor(simAttended), finalTotal: simTotal, percentage, periodsToMaintain, canMissPeriods, requiredDate, message });
