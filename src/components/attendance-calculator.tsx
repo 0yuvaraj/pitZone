@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { format, addDays, isSameDay, isAfter } from "date-fns";
-import { CalendarIcon, Calculator, Lightbulb, TrendingUp, TrendingDown, Info, Sparkles, LoaderCircle, Settings, Forward } from "lucide-react";
+import { CalendarIcon, Calculator, TrendingUp, TrendingDown, Info, LoaderCircle, Settings, Forward } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -20,7 +20,6 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { calculatePeriodsInRange, findRequiredAttendanceDate, setCustomPeriodSettings, CustomPeriodSettings } from "@/lib/attendance";
-import { attendanceAdvisor } from "@/ai/flows/attendance-advisor";
 import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
@@ -62,8 +61,6 @@ export default function AttendanceCalculator() {
   const { toast } = useToast();
   const [result, setResult] = useState<ResultState>(null);
   const [simulationResult, setSimulationResult] = useState<ResultState>(null);
-  const [aiAdvice, setAiAdvice] = useState<string | null>(null);
-  const [isLoadingAi, setIsLoadingAi] = useState(false);
   const [customSettings, setCustomSettings] = useState<CustomPeriodSettings>(initialCustomSettings);
   const [isCustomizationOpen, setCustomizationOpen] = useState(false);
   const [endDateMonth, setEndDateMonth] = useState<Date>(new Date());
@@ -116,7 +113,6 @@ export default function AttendanceCalculator() {
 
     setResult({ finalAttended, finalTotal, percentage, periodsToMaintain, canMissPeriods, requiredDate, message });
     setSimulationResult(null);
-    setAiAdvice(null);
   };
   
   const handleSimulate = (type: 'periods' | 'days') => {
@@ -183,31 +179,6 @@ export default function AttendanceCalculator() {
     }
 
     setSimulationResult({ finalAttended: Math.floor(simAttended), finalTotal: simTotal, percentage, periodsToMaintain, canMissPeriods, requiredDate, message });
-  };
-
-  const handleGetAiAdvice = async () => {
-    if (!result) return;
-    setIsLoadingAi(true);
-    setAiAdvice(null);
-    const { startDate, endDate, attendedPeriods, totalPeriods } = form.getValues();
-
-    try {
-      const res = await attendanceAdvisor({
-        attendedPeriods: attendedPeriods ?? 0,
-        totalPeriods: totalPeriods ?? 0,
-        startDate: format(startDate, 'yyyy-MM-dd'),
-        endDate: format(endDate || startDate, 'yyyy-MM-dd'),
-        requiredPercentage: customSettings.percentage,
-      });
-      setAiAdvice(res.recommendation);
-    } catch (e) {
-      toast({
-        title: "Error getting AI advice",
-        description: "Could not get advice from the AI. Please try again later.",
-        variant: "destructive"
-      });
-    }
-    setIsLoadingAi(false);
   };
 
   const handleSettingsSave = () => {
@@ -458,32 +429,6 @@ export default function AttendanceCalculator() {
                 </CardContent>
             </Card>
 
-             <Card className="shadow-lg bg-gradient-to-br from-primary/10 via-background to-accent/10">
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Sparkles className="text-accent" /> AI Attendance Advisor</CardTitle>
-                    <CardDescription>Get a personalized recommendation from our AI to balance your studies and well-being.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    {isLoadingAi && (
-                        <div className="flex items-center justify-center p-6 text-muted-foreground">
-                            <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
-                            Generating your personal advice...
-                        </div>
-                    )}
-                    {aiAdvice && (
-                         <div className="p-4 bg-accent/20 rounded-lg text-accent-foreground flex gap-3">
-                            <Lightbulb className="h-5 w-5 mt-1 text-accent shrink-0"/>
-                            <p className="font-medium">{aiAdvice}</p>
-                        </div>
-                    )}
-                </CardContent>
-                <CardFooter>
-                     <Button onClick={handleGetAiAdvice} disabled={isLoadingAi} className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
-                        {isLoadingAi ? <LoaderCircle className="mr-2 h-5 w-5 animate-spin" /> : <Lightbulb className="mr-2 h-5 w-5" />}
-                        Get AI Advice
-                    </Button>
-                </CardFooter>
-            </Card>
         </>
       )}
     </div>
